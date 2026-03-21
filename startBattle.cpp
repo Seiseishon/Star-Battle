@@ -82,8 +82,8 @@ void seleccionar_jugador(tjugadores jugadores, int ocup, tcad apodo, int &posici
 void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int aux_posicion, int posicion);
 void tablero_inferior(tmatriz tablero);
 void tablero_superior(tmatriz tablero);
-void ataque_triang_superior(tmatriz tablero, int casilla, tjugadores jugadores, int posicion, int aux_posicion, bool &turno, bool &saltear_turno_jug_1, int &naves_eliminadas_jug_1);
-void ataque_triang_inferior(tmatriz tablero, int casilla, tjugadores jugadores, int aux_posicion, int posicion, bool &turno, bool &saltear_turno_jug_2, int &naves_eliminadas_jug_2);
+void ataque_triang_superior(tmatriz tablero, int casilla, tjugadores jugadores, int posicion, int aux_posicion, bool &turno, bool &saltear_turno_jug_1, bool &lluvia_jug2, int &naves_eliminadas_jug_1);
+void ataque_triang_inferior(tmatriz tablero, int casilla, tjugadores jugadores, int aux_posicion, int posicion, bool &turno, bool &saltear_turno_jug_2, bool &lluvia_jug1,int &naves_eliminadas_jug_2);
 void perder_nave_azar1(tmatriz tablero);
 void perder_nave_azar2(tmatriz tablero);
 
@@ -833,7 +833,7 @@ void tablero_superior(tmatriz tablero){
 	}
 }	
 	
-void ataque_triang_superior(tmatriz tablero, int casilla, tjugadores jugadores, int posicion, int aux_posicion, bool &turno, bool &saltear_turno_jug_1, int &naves_eliminadas_jug_1){
+void ataque_triang_superior(tmatriz tablero, int casilla, tjugadores jugadores, int posicion, int aux_posicion, bool &turno, bool &saltear_turno_jug_1, bool &lluvia_jug2, int &naves_eliminadas_jug_1){
 	int i,j;
 	bool existe = false;
 	
@@ -885,6 +885,7 @@ void ataque_triang_superior(tmatriz tablero, int casilla, tjugadores jugadores, 
 									   cout << "Haz destruido un asteroide"<<endl;
 									   cout << "Sumas 2 puntos!"<<endl;
 									   cout << "Mandaste una lluvia de meteoritos a tu enemigo"<<endl;
+									   lluvia_jug2=true;
 									   system("pause");
 									}else{
 									   if(strcmp(tablero[i][j].evento.nombre, "[ ]") == 0){
@@ -910,7 +911,7 @@ void ataque_triang_superior(tmatriz tablero, int casilla, tjugadores jugadores, 
 	}
 }
 
-void ataque_triang_inferior(tmatriz tablero, int casilla, tjugadores jugadores, int aux_posicion, int posicion, bool &turno, bool &saltear_turno_jug_2, int &naves_eliminadas_jug_2){
+void ataque_triang_inferior(tmatriz tablero, int casilla, tjugadores jugadores, int aux_posicion, int posicion, bool &turno, bool &saltear_turno_jug_2, bool &lluvia_jug1, int &naves_eliminadas_jug_2){
 	int i,j;
 	bool existe = false;
 	
@@ -962,6 +963,7 @@ void ataque_triang_inferior(tmatriz tablero, int casilla, tjugadores jugadores, 
 										cout << "Haz destruido un asteroide"<<endl;
 										cout << "Sumas 2 puntos!"<<endl;
 										cout << "Mandaste una lluvia de meteoritos a tu enemigo"<<endl;
+										lluvia_jug1=true;
 										system("pause");
 									}else{
 										if(strcmp(tablero[i][j].evento.nombre, "[ ]") == 0){
@@ -988,7 +990,7 @@ void ataque_triang_inferior(tmatriz tablero, int casilla, tjugadores jugadores, 
 }
 
 void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int aux_posicion, int posicion){
-	bool turno, saltear_turno_jug_1 = false, saltear_turno_jug_2 = false;
+	bool turno, lluvia_jug1 = false, lluvia_jug2 = false, saltear_turno_jug_1 = false, saltear_turno_jug_2 = false;
 	int naves_eliminadas_jug_1 = 0, naves_eliminadas_jug_2 = 0, casilla;
 	
 	if((ocupF == -1 && ocupC == -1) || posicion == -1 || aux_posicion == -1)
@@ -1026,16 +1028,6 @@ void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int au
 		while(jugadores[aux_posicion].evento.nave != 0 && jugadores[posicion].evento.nave != 0){
 			turno = true;
 			do{
-				//Datos que se mostraran durante la batalla si es su turno
-				system("cls");
-				cout << "Turno Del jugador 1: \n"<<endl;
-				system("pause");
-				cout << "Apodo: "<< jugadores[aux_posicion].apodo<<endl;
-				cout << "Puntaje: " <<jugadores[aux_posicion].puntajes.puntaje_acum<<endl;
-				cout << "Naves disponibles: " <<jugadores[aux_posicion].evento.nave<<endl;
-				cout << "Enemigos derrotados: " <<naves_eliminadas_jug_1<<endl;
-				cout << endl;
-				
 				//controlamos si anteriormente en su ataque fue hacia un Yautija
 				if(saltear_turno_jug_1){
 					cout << "No podras jugar porque estas secuestrado por los Yautija"<<endl;
@@ -1043,6 +1035,24 @@ void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int au
 					saltear_turno_jug_1 = false;
 					system("pause");
 				}else{
+					//Verificamos de ver si le cayó meteoritos por el ataque del otro jugador
+					if (lluvia_jug1 == true){
+						jugadores[aux_posicion].puntajes.puntaje_acum -= 5;
+						cout << "Te cayo una lluvia de meteoritos, pierdes 5 ptos"<<endl;
+						lluvia_jug1 = false;
+						system("pause");
+						system("cls");
+					}
+					//Datos que se mostraran durante la batalla si es su turno
+					system("cls");
+					cout << "Turno Del jugador 1: \n"<<endl;
+					system("pause");
+					cout << "Apodo: "<< jugadores[aux_posicion].apodo<<endl;
+					cout << "Puntaje: " <<jugadores[aux_posicion].puntajes.puntaje_acum<<endl;
+					cout << "Naves disponibles: " <<jugadores[aux_posicion].evento.nave<<endl;
+					cout << "Enemigos derrotados: " <<naves_eliminadas_jug_1<<endl;
+					cout << endl;
+
 					tablero_inferior(tablero);
 					
 					do{
@@ -1059,7 +1069,7 @@ void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int au
 					cout << "Atacando..."<<endl;
 					system("pause");
 					
-					ataque_triang_superior(tablero, casilla, jugadores, posicion, aux_posicion, turno, saltear_turno_jug_1, naves_eliminadas_jug_1);
+					ataque_triang_superior(tablero, casilla, jugadores, posicion, aux_posicion, turno, saltear_turno_jug_1, lluvia_jug2, naves_eliminadas_jug_1);
 					
 					if(turno == true){
 						cout << "La casilla seleccionada ya se jugo antes"<<endl;
@@ -1073,15 +1083,6 @@ void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int au
 			turno = true;
 			
 			do{
-				system("cls");
-				cout << "Turno Del jugador 2: \n"<<endl;
-				system("pause");
-				cout << "Apodo: "<< jugadores[posicion].apodo<<endl;
-				cout << "Puntaje: " <<jugadores[posicion].puntajes.puntaje_acum<<endl;
-				cout << "Naves disponibles: " <<jugadores[posicion].evento.nave<<endl;
-				cout << "Enemigos derrotados: " <<naves_eliminadas_jug_2<<endl;
-				cout << endl;
-				
 				//controlamos si anteriormente en su ataque fue hacia un Yautija
 				if(saltear_turno_jug_2){
 					cout << "No podras jugar porque estas secuestrado por los Yautija"<<endl;
@@ -1089,6 +1090,22 @@ void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int au
 					saltear_turno_jug_2 = false;
 					system("pause");
 				}else{
+					//Verificamos de ver si le cayó meteoritos por el ataque del otro jugador
+					if (lluvia_jug2 == true){
+						jugadores[posicion].puntajes.puntaje_acum -= 5;
+						cout << "Te cayo una lluvia de meteoritos, pierdes 5 ptos"<<endl;
+						lluvia_jug2 = false;
+						system("pause");
+					}
+					system("cls");
+					cout << "Turno Del jugador 2: \n"<<endl;
+					system("pause");
+					cout << "Apodo: "<< jugadores[posicion].apodo<<endl;
+					cout << "Puntaje: " <<jugadores[posicion].puntajes.puntaje_acum<<endl;
+					cout << "Naves disponibles: " <<jugadores[posicion].evento.nave<<endl;
+					cout << "Enemigos derrotados: " <<naves_eliminadas_jug_2<<endl;
+					cout << endl;
+
 					tablero_superior(tablero);
 					
 					do{
@@ -1105,7 +1122,7 @@ void batalla(tjugadores jugadores, tmatriz tablero, int ocupF, int ocupC, int au
 					cout << "Atacando..."<<endl;
 					system("pause");
 					
-					ataque_triang_inferior(tablero, casilla, jugadores, aux_posicion, posicion, turno, saltear_turno_jug_2, naves_eliminadas_jug_2);
+					ataque_triang_inferior(tablero, casilla, jugadores, aux_posicion, posicion, turno, saltear_turno_jug_2, lluvia_jug1, naves_eliminadas_jug_2);
 					
 					if(turno == true){
 						cout << "La casilla seleccionada ya se jugo antes"<<endl;
